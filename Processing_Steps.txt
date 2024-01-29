@@ -1,0 +1,21 @@
+Processing Steps
+
+Main Pipeline Scripts
+1. CellRanger for GEX and TCR/BCR data
+2. QC and filtering
+3. Make Seurat objects
+4. SCT and integration
+5. Subcluster
+6. Add cluster names
+7. Add meta data
+8. Prop Pplots
+9. Add VDJ
+
+T cell Figure Scripts and Non T Cell Figures Scripts
+10. T and Non-T cell figure scripts
+
+Stats For Cell Type Proportions
+11. Stats for cell type proportions
+
+CellPhoneDB
+12. CellPhoneDB
