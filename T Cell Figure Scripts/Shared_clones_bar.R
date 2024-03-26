@@ -55,7 +55,7 @@ results[,1]=shared
 
 results2=as.data.frame(matrix(nrow=length(shared), ncol=length(expt_list)+1))
 colnames(results2)=c("CDR3.aa", expt_list)
-# results2[,1]=shared
+results2[,1]=shared
 
 for(i in 1:length(expt_list)){
   Y=get(paste0(expt_list[i],"_clonotypes"))[,2:4]
@@ -75,6 +75,17 @@ pdf(file = "ALP-0003_shared_expanded_clones_bar.pdf", width = 12, height = 8)
 par(mar=c(2, 2, 2, 2))
   A + scale_fill_manual(values=mycols)
 dev.off()
+
+#global stats table
+results3=as.data.frame(matrix(nrow=2, ncol=length(expt_list)))
+colnames(results3)=c(expt_list)
+row.names(results3)=c("Total Clonotypes", "Expanded Clonotypes")
+for(i in 1:length(expt_list)){
+  Y=get(paste0(expt_list[i],"_clonotypes"))
+  results3[1,i]=nrow(Y)
+  results3[2,i]=length(which(Y$frequency > 2))
+}
+write.table(results3, file="ALP-0003_shared_expanded_clones_freq_part2.txt", row.names=F, quote=F, sep="\t")
 
 
 ################################
@@ -133,6 +144,17 @@ par(mar=c(2, 2, 2, 2))
   B + scale_fill_manual(values=mycols)
 dev.off()
 
+#global stats table
+results3=as.data.frame(matrix(nrow=2, ncol=length(expt_list)))
+colnames(results3)=c(expt_list)
+row.names(results3)=c("Total Clonotypes", "Expanded Clonotypes")
+for(i in 1:length(expt_list)){
+  Y=get(paste0(expt_list[i],"_clonotypes"))
+  results3[1,i]=nrow(Y)
+  results3[2,i]=length(which(Y$frequency > 2))
+}
+write.table(results3, file="ALP-00036_shared_expanded_clones_freq_part2.txt", row.names=F, quote=F, sep="\t")
+
 
 ###############################
 #                             #
@@ -186,6 +208,17 @@ pdf(file = "ALP-00017_shared_expanded_clones_bar.pdf", width = 8, height = 8)
 par(mar=c(2, 2, 2, 2))
   C + scale_fill_manual(values=mycols)
 dev.off()
+
+#global stats table
+results3=as.data.frame(matrix(nrow=2, ncol=length(expt_list)))
+colnames(results3)=c(expt_list)
+row.names(results3)=c("Total Clonotypes", "Expanded Clonotypes")
+for(i in 1:length(expt_list)){
+  Y=get(paste0(expt_list[i],"_clonotypes"))
+  results3[1,i]=nrow(Y)
+  results3[2,i]=length(which(Y$frequency > 2))
+}
+write.table(results3, file="ALP-00017_shared_expanded_clones_freq_part2.txt", row.names=F, quote=F, sep="\t")
 
 
 ###############################
@@ -242,6 +275,17 @@ par(mar=c(2, 2, 2, 2))
   D + scale_fill_manual(values=mycols)
 dev.off()
 
+#global stats table
+results3=as.data.frame(matrix(nrow=2, ncol=length(expt_list)))
+colnames(results3)=c(expt_list)
+row.names(results3)=c("Total Clonotypes", "Expanded Clonotypes")
+for(i in 1:length(expt_list)){
+  Y=get(paste0(expt_list[i],"_clonotypes"))
+  results3[1,i]=nrow(Y)
+  results3[2,i]=length(which(Y$frequency > 2))
+}
+write.table(results3, file="ALP-00023_shared_expanded_clones_freq_part2.txt", row.names=F, quote=F, sep="\t")
+
 
 ###############################
 #                             #
@@ -296,3 +340,15 @@ pdf(file = "ALP-00033_shared_expanded_clones_bar.pdf", width = 10, height = 8)
 par(mar=c(2, 2, 2, 2))
 D + scale_fill_manual(values=mycols)
 dev.off()
+
+#global stats table
+results3=as.data.frame(matrix(nrow=2, ncol=length(expt_list)))
+colnames(results3)=c(expt_list)
+row.names(results3)=c("Total Clonotypes", "Expanded Clonotypes")
+for(i in 1:length(expt_list)){
+  Y=get(paste0(expt_list[i],"_clonotypes"))
+  results3[1,i]=nrow(Y)
+  results3[2,i]=length(which(Y$frequency > 2))
+}
+write.table(results3, file="ALP-00033_shared_expanded_clones_freq_part2.txt", row.names=F, quote=F, sep="\t")
+

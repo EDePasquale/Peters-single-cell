@@ -93,6 +93,177 @@ axis(side = 1, at = seq(1,ncol(data))*1.2-0.5, labels = colnames(data), las = 2)
 legend(x = ncol(data)*1.2+0.5, y = 100, legend = row.names(data), fill = my_colors, bty = "n", border = NA)
 dev.off()
 
+# Make plots for BCR chain usage
+# IGL IGK IGH frequncy barplot
+data_list=NULL
+top_ten_list=NULL
+expt_list=unique(M@meta.data[["orig.ident"]])
+for(expt in 1:length(expt_list)){
+  
+  # Set up path and read in Seurat object
+  name <- expt_list[expt]
+  path <- paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name)
+  M_temp <- subset(x = M, subset = orig.ident == name)
+  
+  # Pull in BCR data files
+  clonotypes <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name, "/clonotypes.csv"), sep=',', header=T)
+  filtered_contig <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name, "/filtered_contig_annotations.csv"), sep=',', header=T)
+  merged_BCR=left_join(filtered_contig, clonotypes, by=c("raw_clonotype_id" = "clonotype_id"))
+  
+  # Add full BCR data to Seurat object
+  M_temp@misc[["BCR_full_table"]]<-merged_BCR
+  
+  # Add BCR data to each cell
+  AB_table=as.data.frame(matrix(nrow=length(unique(merged_BCR$barcode)),ncol=4))
+  colnames(AB_table)=c("sample" , "IGL", "IGK", "IGH")
+  row.names(AB_table)=unique(merged_BCR$barcode)
+  for(i in unique(merged_BCR$barcode)){
+    temp=merged_BCR[which(merged_BCR$barcode==i),] #subset table to just unique cell barcode i
+    temp=temp[,c(1,3,6,23,28)] #reduce to columns we care about, for ease of visualization when coding
+    IGL=temp[which(temp$chain=="IGL"),] #pull out column(s) that are IGL
+    IGK=temp[which(temp$chain=="IGK"),] #pull out column(s) that are IGK
+    IGH=temp[which(temp$chain=="IGH"),] #pull out column(s) that are IGH
+    AB_table[i,1]=name
+    AB_table[i,2]=paste(IGL$cdr3, collapse=",")
+    AB_table[i,3]=paste(IGK$cdr3, collapse=",")
+    AB_table[i,4]=paste(IGH$cdr3, collapse=",")
+  }
+  AB_table=as.data.frame(cbind(barcodes=row.names(AB_table), AB_table))
+  data_to_add=as.data.frame(cbind(barcodes_full=M_temp@assays[["RNA"]]@data@Dimnames[[2]], barcodes=M_temp@assays[["RNA"]]@data@Dimnames[[2]], samples=M_temp@meta.data$orig.ident))
+  data_to_add[,2]=gsub("_.*", "", data_to_add[,2])
+  data_to_add=left_join(data_to_add, AB_table, by=c("barcodes"="barcodes", "samples"="sample"))
+  data_to_add[which(data_to_add[,4] == ""),4]<-NA #deal with blank spaces from the above paste
+  data_to_add[which(data_to_add[,5] == ""),5]<-NA
+  data_to_add[which(data_to_add[,6] == ""),6]<-NA
+  M_temp@meta.data[["IGL"]]<-data_to_add$IGL
+  M_temp@meta.data[["IGK"]]<-data_to_add$IGK
+  M_temp@meta.data[["IGH"]]<-data_to_add$IGH
+  
+  # Save data to make histogram of IGL, IGK, IGH presence
+  hist_data=data_to_add[,4:6]
+  row.names(hist_data)=data_to_add$barcodes_full
+  hist_data[which(!is.na(hist_data$IGL)),1]<-1 #binarize
+  hist_data[which(!is.na(hist_data$IGK)),2]<-1
+  hist_data[which(!is.na(hist_data$IGH)),3]<-1
+  hist_data[which(is.na(hist_data$IGL)),1]<-0
+  hist_data[which(is.na(hist_data$IGK)),2]<-0
+  hist_data[which(is.na(hist_data$IGH)),3]<-0
+  hist_data$IGL=as.numeric(hist_data$IGL)
+  hist_data$IGK=as.numeric(hist_data$IGK)
+  hist_data$IGH=as.numeric(hist_data$IGH)
+  
+  
+  IGL_IGK_IGH_Freq=as.data.frame(table(hist_data))$Freq
+  if(sum(colSums(hist_data))>0){
+    name_list=NULL
+    vals=c("IGL", "IGK", "IGH")
+    for(rrow in 1:nrow(as.data.frame(table(hist_data)))){
+      a=as.data.frame(table(hist_data))[rrow,]
+      temp=as.numeric(lapply(a[1:3], as.character))
+      if(sum(temp)==0){
+        name_list=c(name_list, "None")
+      }else{
+        temp=paste(vals[which(temp != 0)], collapse="+")
+        name_list=c(name_list, temp)
+      }
+    }
+    names(IGL_IGK_IGH_Freq)=name_list
+    M_temp@misc[["IGL_IGK_IGH_Freq"]]<-IGL_IGK_IGH_Freq
+    data_list[[expt]]<-IGL_IGK_IGH_Freq
+  }else{
+    data_list[[expt]]<-IGL_IGK_IGH_Freq
+    names(data_list[[expt]])<-"None"
+  }
+  
+  top_ten=clonotypes[order(clonotypes$frequency, decreasing=T),"cdr3s_aa"][1:10]
+  top_ten_list[[expt]]<-top_ten
+  
+  # Color UMAP by clone size
+  clonesize_table=unique(merged_BCR[,c(1,32)])
+  clonesize_table=left_join(data_to_add, clonesize_table, by=c("barcodes" = "barcode"))
+  M_temp@meta.data[["clonesize_B"]]<-clonesize_table$frequency
+  clones_table=unique(merged_BCR[,c(1,34)])
+  clones_table=left_join(data_to_add, clones_table, by=c("barcodes" = "barcode"))
+  M_temp@meta.data[["clones_B"]]<-clones_table$cdr3s_aa
+  clones_top_ten<-M_temp@meta.data[["clones_B"]]
+  clones_top_ten[which(!clones_top_ten %in% top_ten)]<-NA
+  M_temp@meta.data[["clones_top_ten_B"]]<-clones_top_ten
+  
+}
+
+names(data_list)=expt_list
+data_matrix=do.call(rbind, lapply(data_list, function(x) x[match(names(data_list[[1]]), names(x))]))
+data_matrix[which(is.na(data_matrix))]<-0
+
+# Without the "None" group
+pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly.pdf", width = 10, height = 8.5)
+par(mar=c(10, 6, 4,4))
+barplot(height = t(data_matrix)[2:8,], 
+        beside = TRUE, 
+        col = hue_pal()(7), 
+        las=2,
+        ylab="Barcodes",
+        ylim=c(0,150))
+legend("topright", legend=colnames(data_matrix)[2:8], fill = hue_pal()(7))
+dev.off()
+
+#K/L usage only (from cell ranger analysis)
+data_matrix_IGLIGK=cbind(IGK=rowSums(data_matrix[,grep("IGK", colnames(data_matrix))]), IGL=rowSums(data_matrix[,grep("IGL", colnames(data_matrix))]))
+pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_KL.pdf", width = 10, height = 8.5)
+par(mar=c(10, 6, 4,4))
+barplot(height = t(data_matrix_IGLIGK), 
+        beside = TRUE, 
+        col = hue_pal()(2), 
+        las=2,
+        ylab="Barcodes",
+        ylim=c(0,150))
+legend("topright", legend=colnames(data_matrix_IGLIGK), fill = hue_pal()(2))
+dev.off()
+
+# Heavy chain usage (from Krish analysis)
+data=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
+data[,3]=paste(data[,1], data[,2], sep="-")
+data[,3]=gsub("-$", "", data[,3])
+data=data[,c(3,5)]
+data=data[data$source %in% expt_list,]
+data_matrix=data.frame(unclass(table(data)))
+colnames(data_matrix)[1]<-"Unknown"
+
+# Without the "Unknown" group
+pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy.pdf", width = 10, height = 8.5)
+par(mar=c(10, 6, 4,4))
+barplot(height = t(data_matrix)[2:15,], 
+        beside = TRUE, 
+        col = hue_pal()(14), 
+        las=2,
+        ylab="Barcodes",
+        ylim=c(0,1000))
+legend("topright", legend=colnames(data_matrix)[2:15], fill = hue_pal()(14))
+dev.off()
+
+# Heavy chain usage (from Krish analysis) — reduced to IGC, IGD, IGG, and IGM level only
+data=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
+data[,3]=paste(data[,1], data[,2], sep="-")
+data[,3]=gsub("-$", "", data[,3])
+data=data[,c(3,5)]
+data=data[data$source %in% expt_list,]
+data[,2]=substr(gsub("HC", "", data[,2]), start = 1, stop = 3)
+data[,2]=gsub("IG", "Ig", data[,2])
+data_matrix=data.frame(unclass(table(data)))
+colnames(data_matrix)[1]<-"Unknown"
+
+# Without the "Unknown" group
+pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy_Redu.pdf", width = 10, height = 8.5)
+par(mar=c(10, 6, 4,4))
+barplot(height = t(data_matrix)[2:5,], 
+        beside = TRUE, 
+        col = hue_pal()(4), 
+        las=2,
+        ylab="Barcodes",
+        ylim=c(0,1000))
+legend("topright", legend=colnames(data_matrix)[2:5], fill = hue_pal()(4))
+dev.off()
+
 # Normalize data using log for visualization purposes
 M_B <- NormalizeData(M_B, assay="RNA")
 all.genes <- rownames(M_B)
@@ -105,234 +276,19 @@ par(mar=c(2, 2, 2, 2))
 VlnPlot(M_B, assay="RNA", group.by="cluster_names_new", stack=T, features=myGenes, flip=T, sort=T) + NoLegend()
 dev.off()
 
-# New Code for Dot Plot (to display the values as non-scaled to best represent the actual expression values)
-########
-DotPlot <- function(
-    object,
-    assay = NULL,
-    features,
-    cols = c("lightgrey", "blue"),
-    col.min = -2.5,
-    col.max = 2.5,
-    dot.min = 0,
-    dot.scale = 6,
-    idents = NULL,
-    group.by = NULL,
-    split.by = NULL,
-    cluster.idents = FALSE,
-    scale = TRUE,
-    scale.by = 'radius',
-    scale.min = NA,
-    scale.max = NA) {
-  assay <- assay %||% SeuratObject:::DefaultAssay(object = object)
-  SeuratObject:::DefaultAssay(object = object) <- assay
-  split.colors <- !is.null(x = split.by) && !any(cols %in% rownames(x = brewer.pal.info))
-  scale.func <- switch(
-    EXPR = scale.by,
-    'size' = scale_size,
-    'radius' = scale_radius,
-    stop("'scale.by' must be either 'size' or 'radius'")
-  )
-  feature.groups <- NULL
-  if (is.list(features) | any(!is.na(names(features)))) {
-    feature.groups <- unlist(x = sapply(
-      X = 1:length(features),
-      FUN = function(x) {
-        return(rep(x = names(x = features)[x], each = length(features[[x]])))
-      }
-    ))
-    if (any(is.na(x = feature.groups))) {
-      warning(
-        "Some feature groups are unnamed.",
-        call. = FALSE,
-        immediate. = TRUE
-      )
-    }
-    features <- unlist(x = features)
-    names(x = feature.groups) <- features
-  }
-  cells <- unlist(x = SeuratObject:::CellsByIdentities(object = object, idents = idents))
-  
-  data.features <- SeuratObject:::FetchData(object = object, vars = features, cells = cells, slot="data")
-  data.features$id <- if (is.null(x = group.by)) {
-    SeuratObject:::Idents(object = object)[cells, drop = TRUE]
-  } else {
-    object[[group.by, drop = TRUE]][cells, drop = TRUE]
-  }
-  if (!is.factor(x = data.features$id)) {
-    data.features$id <- factor(x = data.features$id)
-  }
-  id.levels <- levels(x = data.features$id)
-  data.features$id <- as.vector(x = data.features$id)
-  if (!is.null(x = split.by)) {
-    splits <- object[[split.by, drop = TRUE]][cells, drop = TRUE]
-    if (split.colors) {
-      if (length(x = unique(x = splits)) > length(x = cols)) {
-        stop("Not enough colors for the number of groups")
-      }
-      cols <- cols[1:length(x = unique(x = splits))]
-      names(x = cols) <- unique(x = splits)
-    }
-    data.features$id <- paste(data.features$id, splits, sep = '_')
-    unique.splits <- unique(x = splits)
-    id.levels <- paste0(rep(x = id.levels, each = length(x = unique.splits)), "_", rep(x = unique(x = splits), times = length(x = id.levels)))
-  }
-  data.plot <- lapply(
-    X = unique(x = data.features$id),
-    FUN = function(ident) {
-      data.use <- data.features[data.features$id == ident, 1:(ncol(x = data.features) - 1), drop = FALSE]
-      avg.exp <- apply(
-        X = data.use,
-        MARGIN = 2,
-        FUN = function(x) {
-          return(mean(x = expm1(x = x)))
-        }
-      )
-      pct.exp <- apply(X = data.use, MARGIN = 2, FUN = Seurat:::PercentAbove, threshold = 0)
-      return(list(avg.exp = avg.exp, pct.exp = pct.exp))
-    }
-  )
-  names(x = data.plot) <- unique(x = data.features$id)
-  if (cluster.idents) {
-    mat <- do.call(
-      what = rbind,
-      args = lapply(X = data.plot, FUN = unlist)
-    )
-    mat <- scale(x = mat)
-    id.levels <- id.levels[hclust(d = dist(x = mat))$order]
-  }
-  data.plot <- lapply(
-    X = names(x = data.plot),
-    FUN = function(x) {
-      data.use <- as.data.frame(x = data.plot[[x]])
-      data.use$features.plot <- rownames(x = data.use)
-      data.use$id <- x
-      return(data.use)
-    }
-  )
-  data.plot <- do.call(what = 'rbind', args = data.plot)
-  if (!is.null(x = id.levels)) {
-    data.plot$id <- factor(x = data.plot$id, levels = id.levels)
-  }
-  ngroup <- length(x = levels(x = data.plot$id))
-  if (ngroup == 1) {
-    scale <- FALSE
-    warning(
-      "Only one identity present, the expression values will be not scaled",
-      call. = FALSE,
-      immediate. = TRUE
-    )
-  } else if (ngroup < 5 & scale) {
-    warning(
-      "Scaling data with a low number of groups may produce misleading results",
-      call. = FALSE,
-      immediate. = TRUE
-    )
-  }
-  avg.exp.scaled <- sapply(
-    X = unique(x = data.plot$features.plot),
-    FUN = function(x) {
-      data.use <- data.plot[data.plot$features.plot == x, 'avg.exp']
-      if (scale) {
-        data.use <- scale(x = data.use)
-        data.use <- Seurat:::MinMax(data = data.use, min = col.min, max = col.max)
-      } else {
-        data.use <- log1p(x = data.use)
-      }
-      return(data.use)
-    }
-  )
-  avg.exp.scaled <- as.vector(x = t(x = avg.exp.scaled))
-  if (split.colors) {
-    avg.exp.scaled <- as.numeric(x = cut(x = avg.exp.scaled, breaks = 20))
-  }
-  data.plot$avg.exp.scaled <- avg.exp.scaled
-  data.plot$features.plot <- factor(
-    x = data.plot$features.plot,
-    levels = features
-  )
-  data.plot$pct.exp[data.plot$pct.exp < dot.min] <- NA
-  data.plot$pct.exp <- data.plot$pct.exp * 100
-  if (split.colors) {
-    splits.use <- vapply(
-      X = as.character(x = data.plot$id),
-      FUN = gsub,
-      FUN.VALUE = character(length = 1L),
-      pattern =  paste0(
-        '^((',
-        paste(sort(x = levels(x = object), decreasing = TRUE), collapse = '|'),
-        ')_)'
-      ),
-      replacement = '',
-      USE.NAMES = FALSE
-    )
-    data.plot$colors <- mapply(
-      FUN = function(color, value) {
-        return(colorRampPalette(colors = c('grey', color))(20)[value])
-      },
-      color = cols[splits.use],
-      value = avg.exp.scaled
-    )
-  }
-  color.by <- ifelse(test = split.colors, yes = 'colors', no = 'avg.exp') #changed
-  if (!is.na(x = scale.min)) {
-    data.plot[data.plot$pct.exp < scale.min, 'pct.exp'] <- scale.min
-  }
-  if (!is.na(x = scale.max)) {
-    data.plot[data.plot$pct.exp > scale.max, 'pct.exp'] <- scale.max
-  }
-  if (!is.null(x = feature.groups)) {
-    data.plot$feature.groups <- factor(
-      x = feature.groups[data.plot$features.plot],
-      levels = unique(x = feature.groups)
-    )
-  }
-  plot <- ggplot(data = data.plot, mapping = aes_string(x = 'features.plot', y = 'id')) +
-    geom_point(mapping = aes_string(size = 'pct.exp', color = color.by)) +
-    scale.func(range = c(0, dot.scale), limits = c(scale.min, scale.max)) +
-    theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
-    guides(size = guide_legend(title = 'Percent Expressed')) +
-    labs(
-      x = 'Features',
-      y = ifelse(test = is.null(x = split.by), yes = 'Identity', no = 'Split Identity')
-    ) +
-    theme_cowplot()
-  if (!is.null(x = feature.groups)) {
-    plot <- plot + facet_grid(
-      facets = ~feature.groups,
-      scales = "free_x",
-      space = "free_x",
-      switch = "y"
-    ) + theme(
-      panel.spacing = unit(x = 1, units = "lines"),
-      strip.background = element_blank()
-    )
-  }
-  if (split.colors) {
-    plot <- plot + scale_color_identity()
-  } else if (length(x = cols) == 1) {
-    plot <- plot + scale_color_distiller(palette = cols)
-  } else {
-    plot <- plot + scale_color_gradient(low = cols[1], high = cols[2])
-  }
-  if (!split.colors) {
-    plot <- plot + guides(color = guide_colorbar(title = 'Average Expression'))
-  }
-  return(plot)
-}
+# Reorder levels for dotplot
+M_B@meta.data[["cluster_names_new"]]<-factor(M_B@meta.data[["cluster_names_new"]], levels=c("Naïve B", "Transitional B"))
 
-########
-
-pdf(file = "Bcell_Manual_RNA_DotPlot_Names.pdf", width = 10, height = 5)
+pdf(file = "Bcell_Manual_RNA_DotPlot_Names_log.pdf", width = 8, height = 4)
 par(mar=c(4, 4, 4, 4))
-DotPlot(object=M_B, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y ="Cluster", x=NULL)
+DotPlot(object=M_B, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y =NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text.y = element_text(angle = 90, vjust = 1, hjust=1))
 dev.off()
 
 
 #myGenes2=c("CD19", "CD24", "CD38", "CD27", "PTPRC", "CD44", "A4GALT", "MME", "IL10", "IGHM", "IGHD", "IGHA1", "IGHG1", "MS4A1")
 myGenes2=c("MS4A1", "CD19", "PTPRC", "IGHM", "IGHD", "IGHA1", "IGHG1", "CD24", "CD38", "CD27", "FCER2", "CD1C", "CD72", "CD5", "CD9", "A4GALT")
-pdf(file = "Bcell_Manual2_RNA_DotPlot_Names.pdf", width = 10, height = 5)
+pdf(file = "Bcell_Manual2_RNA_DotPlot_Names_log.pdf", width = 8, height = 4)
 par(mar=c(4, 4, 4, 4))
-DotPlot(object=M_B, assay="RNA", features = myGenes2, dot.scale=10, scale=F) + labs(y ="Cluster", x=NULL)
+DotPlot(object=M_B, assay="RNA", features = myGenes2, dot.scale=10, scale=F) + labs(y =NULL, x=NULL)+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text.y = element_text(angle = 90, vjust = 0, hjust=0.5))
 dev.off()
 
