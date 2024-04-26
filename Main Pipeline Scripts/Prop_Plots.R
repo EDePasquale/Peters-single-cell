@@ -34,6 +34,7 @@ data <- sweep(data, 2, colSums(data), "/")*100
 
 myColors=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Color_Guide.txt", sep = "\t", header=T, comment.char="*")
 myColors[4,2]<-"Naïve B"
+myColors[22,2]<-"CD4 Naïve T"
 myColors=myColors[order(myColors$Cluster_Name, decreasing=F),]
 my_colors=myColors$Cluster_Color
 data=as.data.frame(cbind(data, colors=my_colors))
@@ -66,6 +67,7 @@ data <- sweep(data, 2, colSums(data), "/")*100
 
 myColors=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Color_Guide.txt", sep = "\t", header=T, comment.char="*")
 myColors[4,2]<-"Naïve B"
+myColors[22,2]<-"CD4 Naïve T"
 myColors=myColors[order(myColors$Cluster_Name, decreasing=F),]
 my_colors=myColors$Cluster_Color
 data=as.data.frame(cbind(data, colors=my_colors))

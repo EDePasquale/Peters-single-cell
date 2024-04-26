@@ -23,88 +23,123 @@ data=data[-1,]
 rownamesdata=row.names(data)
 data=apply(data, 2, as.numeric)
 row.names(data)<-rownamesdata
-data<-data[c(3,6,7,8,10,11,16),]
+data<-data[c(3,4,5,8,9,10,12,13,18),]
 data <- sweep(data, 2, colSums(data), "/")*100
 
+###################
+# CD4 activated T #
+###################
+z=cbind(y, data[1,]) #CD4 activated T
+colnames(z)<-c("sample", "ACRType", "CD4activatedT")
+z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
+
+# Perform pairwise comparisons
+compare_means(CD4activatedT ~ ACRType,  data = z)
+# .y.           group1   group2                p p.adj p.format p.signif method  
+# <chr>         <chr>    <chr>             <dbl> <dbl> <chr>    <chr>    <chr>   
+# 1 CD4activatedT Donor    Not ACR           1         1 1.00     ns       Wilcoxon
+# 2 CD4activatedT Donor    Late ACR          0.785     1 0.79     ns       Wilcoxon
+# 3 CD4activatedT Donor    Resolved Late ACR 0.809     1 0.81     ns       Wilcoxon
+# 4 CD4activatedT Not ACR  Late ACR          0.906     1 0.91     ns       Wilcoxon
+# 5 CD4activatedT Not ACR  Resolved Late ACR 0.896     1 0.90     ns       Wilcoxon
+# 6 CD4activatedT Late ACR Resolved Late ACR 0.785     1 0.79     ns       Wilcoxon
 
 ###############
 # CD4 naive T #
 ###############
-z=cbind(y, data[1,]) #CD4 naive T
+z=cbind(y, data[2,]) #CD4 naive T
 colnames(z)<-c("sample", "ACRType", "CD4naiveT")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 
 # Perform pairwise comparisons
 compare_means(CD4naiveT ~ ACRType,  data = z)
-# .y.   group1   group2                   p   p.adj p.format p.signif method  
-# <chr>     <chr>    <chr>             <dbl> <dbl> <chr>    <chr>    <chr>   
-#   1 CD4naiveT Donor    Not ACR           0.364  1    0.36     ns       Wilcoxon
-# 2 CD4naiveT Donor    Late ACR          0.483  1    0.48     ns       Wilcoxon
-# 3 CD4naiveT Donor    Resolved Late ACR 0.470  1    0.47     ns       Wilcoxon
-# 4 CD4naiveT Not ACR  Late ACR          0.498  1    0.50     ns       Wilcoxon
-# 5 CD4naiveT Not ACR  Resolved Late ACR 0.381  1    0.38     ns       Wilcoxon
-# 6 CD4naiveT Late ACR Resolved Late ACR 0.139  0.83 0.14     ns       Wilcoxon
+# .y.       group1   group2                 p p.adj p.format p.signif method  
+# <chr>     <chr>    <chr>              <dbl> <dbl> <chr>    <chr>    <chr>   
+#   1 CD4naiveT Donor    Not ACR           0.381   1    0.381    ns       Wilcoxon
+# 2 CD4naiveT Donor    Late ACR          0.235   1    0.235    ns       Wilcoxon
+# 3 CD4naiveT Donor    Resolved Late ACR 0.0649  0.39 0.065    ns       Wilcoxon
+# 4 CD4naiveT Not ACR  Late ACR          0.301   1    0.301    ns       Wilcoxon
+# 5 CD4naiveT Not ACR  Resolved Late ACR 0.262   1    0.262    ns       Wilcoxon
+# 6 CD4naiveT Late ACR Resolved Late ACR 0.340   1    0.340    ns       Wilcoxon
+
+#############
+# CD4 TCM #
+#############
+z=cbind(y, data[3,]) #CD4 TCM
+colnames(z)<-c("sample", "ACRType", "CD4TCM")
+z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
+
+# Perform pairwise comparisons
+compare_means(CD4TCM ~ ACRType,  data = z)
+# .y.      group1   group2                 p p.adj p.format p.signif method  
+# <chr>    <chr>    <chr>              <dbl> <dbl> <chr>    <chr>    <chr>   
+#   1 CD4TCM Donor    Not ACR           0.860   1    0.860    ns       Wilcoxon
+# 2 CD4TCM Donor    Late ACR          0.0261  0.16 0.026    *        Wilcoxon
+# 3 CD4TCM Donor    Resolved Late ACR 0.462   1    0.462    ns       Wilcoxon
+# 4 CD4TCM Not ACR  Late ACR          0.143   0.72 0.143    ns       Wilcoxon
+# 5 CD4TCM Not ACR  Resolved Late ACR 0.878   1    0.878    ns       Wilcoxon
+# 6 CD4TCM Late ACR Resolved Late ACR 0.240   0.96 0.240    ns       Wilcoxon
 
 
 #########################
 # CD8 Effector Memory T #
 #########################
-z=cbind(y, data[2,]) #CD8 Effector Memory T
+z=cbind(y, data[4,]) #CD8 Effector Memory T
 colnames(z)<-c("sample", "ACRType", "CD8EM")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 
 # Perform pairwise comparisons
 compare_means(CD8EM ~ ACRType,  data = z)
-# .y.   group1   group2                   p   p.adj p.format p.signif method  
+# .y.   group1   group2                p p.adj p.format p.signif method  
 # <chr> <chr>    <chr>             <dbl> <dbl> <chr>    <chr>    <chr>   
-#   1 CD8EM Donor    Not ACR           0.381  1    0.38     ns       Wilcoxon
-# 2 CD8EM Donor    Late ACR          0.205  0.92 0.21     ns       Wilcoxon
-# 3 CD8EM Donor    Resolved Late ACR 0.818  1    0.82     ns       Wilcoxon
+#   1 CD8EM Donor    Not ACR           0.604  1    0.60     ns       Wilcoxon
+# 2 CD8EM Donor    Late ACR          0.161  0.97 0.16     ns       Wilcoxon
+# 3 CD8EM Donor    Resolved Late ACR 0.630  1    0.63     ns       Wilcoxon
 # 4 CD8EM Not ACR  Late ACR          0.738  1    0.74     ns       Wilcoxon
-# 5 CD8EM Not ACR  Resolved Late ACR 0.167  0.92 0.17     ns       Wilcoxon
-# 6 CD8EM Late ACR Resolved Late ACR 0.154  0.92 0.15     ns       Wilcoxon
+# 5 CD8EM Not ACR  Resolved Late ACR 0.714  1    0.71     ns       Wilcoxon
+# 6 CD8EM Late ACR Resolved Late ACR 0.559  1    0.56     ns       Wilcoxon
 
 
 ##################
 # CD8 Effector T #
 ##################
-z=cbind(y, data[3,]) #CD8 Effector T
+z=cbind(y, data[5,]) #CD8 Effector T
 colnames(z)<-c("sample", "ACRType", "CD8E")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 
 # Perform pairwise comparisons
 compare_means(CD8E ~ ACRType,  data = z)
-# .y.   group1   group2                   p   p.adj p.format p.signif method  
+# .y.   group1   group2                p p.adj p.format p.signif method  
 # <chr> <chr>    <chr>             <dbl> <dbl> <chr>    <chr>    <chr>   
-#   1 CD8E  Donor    Not ACR           0.604  1    0.60     ns       Wilcoxon
-# 2 CD8E  Donor    Late ACR          0.161  0.97 0.16     ns       Wilcoxon
-# 3 CD8E  Donor    Resolved Late ACR 0.630  1    0.63     ns       Wilcoxon
+#   1 CD8E  Donor    Not ACR           0.381  1    0.38     ns       Wilcoxon
+# 2 CD8E  Donor    Late ACR          0.205  0.92 0.21     ns       Wilcoxon
+# 3 CD8E  Donor    Resolved Late ACR 0.818  1    0.82     ns       Wilcoxon
 # 4 CD8E  Not ACR  Late ACR          0.738  1    0.74     ns       Wilcoxon
-# 5 CD8E  Not ACR  Resolved Late ACR 0.714  1    0.71     ns       Wilcoxon
-# 6 CD8E  Late ACR Resolved Late ACR 0.559  1    0.56     ns       Wilcoxon
+# 5 CD8E  Not ACR  Resolved Late ACR 0.167  0.92 0.17     ns       Wilcoxon
+# 6 CD8E  Late ACR Resolved Late ACR 0.154  0.92 0.15     ns       Wilcoxon
 
-#####################
-# CD8 TRM Activated #
-#####################
-z=cbind(y, data[4,]) #CD8 TRM Activated
-colnames(z)<-c("sample", "ACRType", "CD8TRMA")
+#################
+# CD8 NK-like T #
+#################
+z=cbind(y, data[6,]) #CD8 NK-like T
+colnames(z)<-c("sample", "ACRType", "CD8NKlike")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 
 # Perform pairwise comparisons
-compare_means(CD8TRMA ~ ACRType,  data = z)
-# .y.     group1   group2                 p p.adj p.format p.signif method  
-# <chr>   <chr>    <chr>             <dbl> <dbl> <chr>    <chr>    <chr>   
-#   1 CD8TRMA Donor    Not ACR           0.604     1 0.60     ns       Wilcoxon
-# 2 CD8TRMA Donor    Late ACR          0.470     1 0.47     ns       Wilcoxon
-# 3 CD8TRMA Donor    Resolved Late ACR 0.310     1 0.31     ns       Wilcoxon
-# 4 CD8TRMA Not ACR  Late ACR          0.574     1 0.57     ns       Wilcoxon
-# 5 CD8TRMA Not ACR  Resolved Late ACR 0.905     1 0.90     ns       Wilcoxon
-# 6 CD8TRMA Late ACR Resolved Late ACR 0.533     1 0.53     ns       Wilcoxon
+compare_means(CD8NKlike ~ ACRType,  data = z)
+# .y.       group1   group2                p p.adj p.format p.signif method  
+# <chr>     <chr>    <chr>             <dbl> <dbl> <chr>    <chr>    <chr>   
+#   1 CD8NKlike Donor    Not ACR           0.604     1 0.60     ns       Wilcoxon
+# 2 CD8NKlike Donor    Late ACR          0.470     1 0.47     ns       Wilcoxon
+# 3 CD8NKlike Donor    Resolved Late ACR 0.310     1 0.31     ns       Wilcoxon
+# 4 CD8NKlike Not ACR  Late ACR          0.574     1 0.57     ns       Wilcoxon
+# 5 CD8NKlike Not ACR  Resolved Late ACR 0.905     1 0.90     ns       Wilcoxon
+# 6 CD8NKlike Late ACR Resolved Late ACR 0.533     1 0.53     ns       Wilcoxon
 
 #############
 # Cycling T #
 #############
-z=cbind(y, data[5,]) #Cycling T
+z=cbind(y, data[7,]) #Cycling T
 colnames(z)<-c("sample", "ACRType", "Cycling")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 
@@ -122,7 +157,7 @@ compare_means(Cycling ~ ACRType,  data = z)
 #################
 # Gamma Delta T #
 #################
-z=cbind(y, data[6,]) #Gamma Delta T
+z=cbind(y, data[8,]) #Gamma Delta T
 colnames(z)<-c("sample", "ACRType", "GDT")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 
@@ -157,7 +192,7 @@ dev.off()
 ########
 # MAIT #
 ########
-z=cbind(y, data[7,]) #MAIT
+z=cbind(y, data[9,]) #MAIT
 colnames(z)<-c("sample", "ACRType", "MAIT")
 z$ACRType=factor(z$ACRType, levels = c("Donor", "Not ACR", "Late ACR", "Resolved Late ACR"))
 

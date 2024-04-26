@@ -1,0 +1,25 @@
+Cluster_Number	Cluster_Name	Cluster_Color	Cluster_Name_Redu	Cluster_Color_Redu
+0	CD8 Effector T	#33A02C	CD8T	#33A02C
+1	CD56bright NK	#6A3D9A	NK	#6A3D9A
+2	Monocyte-Derived Macrophage	#F781BF	Monocyte-Derived Macrophage	#F781BF
+3	Na•ve B	#E31A1C	B	#E31A1C
+4	LST1+ Kupffer	#386CB0	Kupffer	#386CB0
+5	CD8 NK-like T	#66C2A5	CD8T	#33A02C
+6	MAIT	#666666	CD8T	#33A02C
+7	CD56dim NK	#E7298A	NK	#6A3D9A
+8	CD8 Effector Memory T	#CCEBC5	CD8T	#33A02C
+9	IFI27+ Kupffer	#FCCDE5	Kupffer	#386CB0
+10	Cycling T	#FF7F00	CD8T	#33A02C
+11	Gamma Delta T	#A6CEE3	Gamma Delta T	#A6CEE3
+12	LSEC/VEC	#B15928	LSEC/VEC	#B15928
+13	Hepatocyte	#999999	Hepatocyte	#999999
+14	pDC	#BC80BD	pDC	#BC80BD
+15	C1Q+ Kupffer	#CAB2D6	Kupffer	#386CB0
+16	Cholangiocyte	#FDC086	Cholangiocyte	#FDC086
+17	Plasma	#A6D854	Plasma	#A6D854
+18	CD1C+ Kupffer	#D9D9D9	Kupffer	#386CB0
+19	PTPRC+ Kupffer	#FB8072	Kupffer	#386CB0
+20	Transitional B	tomato4	B	#E31A1C
+21	CD4 Naive T	wheat3	CD4T	#FFD92F
+22	CD4 Activated T	#828824	CD4T	#FFD92F
+23	CD4 TEMRA	#857551	CD4T	#FFD92F

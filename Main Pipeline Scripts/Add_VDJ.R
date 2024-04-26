@@ -11,6 +11,9 @@
 library(Seurat)
 library(dplyr)
 library(plyr)
+library(scales)
+library(pheatmap)
+library(ggplot2)
 
 # Read in new Seurat object
 setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23")

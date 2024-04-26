@@ -9,13 +9,13 @@ setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_In
 M <- readRDS("Seurat_Liver_30_subcluster_names_meta_TCR_BCR_Krish.rds")
 
 # Subset to CD8
-M<-subset(M, idents=c("CD8 Effector Memory T", "CD8 Effector T", "MAIT", "CD8 TRM Activated", "Cycling T")) # CD8 only
+M<-subset(M, idents=c("CD8 Effector Memory T", "CD8 Effector T", "MAIT", "CD8 NK-like T", "Cycling T")) # CD8 only
 
 # Subset to expanded
 expanded=rep("no", nrow(M@meta.data))
 expanded[which(M$clonesize>2)]<-"yes"
 M[["expanded"]] <-expanded
-table(M@meta.data$expanded)
+table(M@meta.data$expanded) # this didn't change, as expected
 # no  yes 
 # 2949  566
 M<-subset(M, subset = expanded == "yes")
@@ -78,7 +78,7 @@ setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_In
 M <- readRDS("Seurat_Liver_30_subcluster_names_meta_TCR_BCR_Krish.rds")
 
 # Subset to CD8
-M<-subset(M, idents=c("CD8 Effector Memory T", "CD8 Effector T", "MAIT", "CD8 TRM Activated", "Cycling T")) # CD8 only
+M<-subset(M, idents=c("CD8 Effector Memory T", "CD8 Effector T", "MAIT", "CD8 NK-like T", "Cycling T")) # CD8 only
 
 # Subset to expanded
 expanded=rep("no", nrow(M@meta.data))
@@ -148,7 +148,7 @@ setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_In
 M <- readRDS("Seurat_Liver_30_subcluster_names_meta_TCR_BCR_Krish.rds")
 
 # Reduce to T cells
-M<-subset(M, idents=c("CD8 Effector Memory T", "CD8 Effector T", "MAIT", "CD8 TRM Activated", "Cycling T", "CD4 naive T", "Gamma Delta T")) 
+M<-subset(M, idents=c("CD8 Effector Memory T", "CD8 Effector T", "MAIT", "CD8 NK-like T", "Cycling T", "CD4 Naïve T", "CD4 Activated T", "CD4 TCM", "Gamma Delta T")) 
 
 
 ###############################

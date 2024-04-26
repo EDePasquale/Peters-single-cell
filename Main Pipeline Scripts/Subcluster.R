@@ -473,6 +473,87 @@ M@meta.data[["subcluster_9_2"]] <- temp[,2]
 DimPlot(M, reduction="tsne", group.by = "subcluster_9_2", label=T)
 
 
+##################
+#                #
+# Subcluster CD4 # # split CD4 into naive and activated (and remove 6 contaminating B cells)
+#                #
+##################
+
+# Split cluster 21
+M<-SetIdent(M, value="subcluster_9_2")
+M_21=subset(x = M, idents = c(21))
+
+# Subcluster
+M_21=RunPCA(M_21, npcs = 30, verbose = FALSE)
+M_21=RunUMAP(M_21, reduction = "pca", dims = 1:30)
+M_21=RunTSNE(M_21, reduction = "pca", dims = 1:30)
+M_21=FindNeighbors(M_21, reduction = "pca", dims = 1:30)
+M_21=FindClusters(M_21, resolution = 0.5)
+
+DefaultAssay(M_21)<-"RNA"
+
+X=M_21[which(row.names(M_21)=="MS4A1"),]
+to_remove=names(X@assays$RNA@data[1,][which(X@assays$RNA@data[1,] > 2)]) # remove 6 cells with "high" MS4A1
+to_keep=setdiff(Cells(M_21), to_remove)
+M_21_sub=subset(M_21, cells=to_keep)
+
+DefaultAssay(M_21)<-"integrated"
+DefaultAssay(M_21_sub)<-"integrated"
+
+M_21_sub=FindNeighbors(M_21_sub, reduction = "pca", dims = 1:30)
+M_21_sub=FindClusters(M_21_sub, resolution = 0.5)
+
+dir.create("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Subcluster_21")
+setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Subcluster_21")
+
+# Visualization
+p1 <- DimPlot(M_21_sub, reduction = "umap", group.by = "orig.ident")
+p2 <- DimPlot(M_21_sub, reduction = "umap", label = TRUE, repel = TRUE)
+p3 <- DimPlot(M_21_sub, reduction = "tsne", group.by = "orig.ident")
+p4 <- DimPlot(M_21_sub, reduction = "tsne", label = TRUE, repel = TRUE)
+
+pdf(file = "UMAP_sample_and_cluster.pdf", width = 18, height = 8.5)
+par(mar=c(4, 4, 4, 4))
+p1 + p2
+dev.off()
+
+pdf(file = "UMAP_split_by_sample.pdf", width = 80, height = 8.5)
+par(mar=c(4, 4, 4, 4))
+DimPlot(M_21_sub, reduction = "umap", split.by = "orig.ident")
+dev.off()
+
+pdf(file = "TSNE_sample_and_cluster.pdf", width = 18, height = 8.5)
+par(mar=c(4, 4, 4, 4))
+p3 + p4
+dev.off()
+
+pdf(file = "TSNE_split_by_sample.pdf", width = 80, height = 8.5)
+par(mar=c(4, 4, 4, 4))
+DimPlot(M_21_sub, reduction = "tsne", split.by = "orig.ident")
+dev.off()
+
+# Plot Seurat UMAP
+pdf(file = "UMAP_Liver_25_Seurat_Groups.pdf", width = 7, height = 6)
+par(mar=c(2, 2, 2, 2))
+DimPlot(object = M_21_sub, reduction = "umap",label= TRUE)
+dev.off()
+
+# Plot Seurat TSNE
+pdf(file = "TSNE_Liver_25_Seurat_Groups.pdf", width = 7, height = 6)
+par(mar=c(2, 2, 2, 2))
+DimPlot(object = M_21_sub, reduction = "tsne",label= TRUE)
+dev.off()
+
+# Add new split clusters to full Seurat object
+temp=cbind(as.numeric(as.character(M@meta.data[["subcluster_9_2"]])),as.numeric(as.character(M@meta.data[["subcluster_9_2"]])))
+row.names(temp)=M@assays[["SCT"]]@data@Dimnames[[2]]
+new_clusters=mapvalues(as.numeric(as.character(M_21_sub@active.ident)), from=c(0,1,2), to=c(21,22,23))
+temp[names(M_21_sub@active.ident),2]<-new_clusters
+M@meta.data[["subcluster_21"]] <- temp[,2]
+DimPlot(M, reduction="tsne", group.by = "subcluster_21", label=T)
+Idents(M)<-"subcluster_21"
+
+
 ############################
 #                          #
 # Remove Unknown T Cluster # # This cluster has a high ribosomal mRNA count, so we decided to move it
@@ -530,4 +611,4 @@ dev.off()
 ###################
 
 # Save new object
-saveRDS(M, file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Seurat_Liver_30_subcluster.rds")
+saveRDS(M, file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Seurat_Liver_30_subcluster_CD4.rds")
