@@ -71,6 +71,8 @@ axis(side = 1, at = seq(1,ncol(data))*1.2-0.5, labels = colnames(data), las = 2)
 legend(x = ncol(data)*1.2+0.5, y = 100, legend = row.names(data), fill = my_colors, bty = "n", border = NA)
 dev.off()
 
+write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_NK_cell_byACRType_new_colors.txt", sep="\t", quote=F)
+
 # Normalize data using log for visualization purposes
 M_N <- NormalizeData(M_N, assay="RNA")
 all.genes <- rownames(M_N)
@@ -88,4 +90,7 @@ pdf(file = "NK_Manual_RNA_DotPlot_Names_log.pdf", width = 8, height = 4)
 par(mar=c(4, 4, 4, 4))
 DotPlot(object=M_N, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y = NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 dev.off()
+
+p1<-DotPlot(object=M_N, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y = NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+write.table(p1[["data"]], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/NK_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
 

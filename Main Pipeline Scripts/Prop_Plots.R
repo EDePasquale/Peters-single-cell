@@ -139,6 +139,8 @@ data=as.data.frame(cbind(data, colors=my_colors))
 my_colors=data$colors
 data=data[,-5]
 
+write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_byACRType_redu.txt", sep="\t", quote=F)
+
 # Make plot
 pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_byACRType_redu.pdf", width = 9, height = 9)
 par(mar = c(8,4,4,16), xpd = T)

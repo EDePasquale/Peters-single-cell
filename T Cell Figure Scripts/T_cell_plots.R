@@ -77,6 +77,8 @@ data=as.data.frame(cbind(data, colors=my_colors))
 my_colors=data$colors
 data=data[,-5]
 
+write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byACRType_new_colors.txt", sep="\t", quote=F)
+
 # Make plot
 pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byACRType_new_colors.pdf", width = 9, height = 9)
 par(mar = c(8,4,4,16), xpd = T)
@@ -99,6 +101,9 @@ pdf(file = "Tcell_Manual_RNA_DotPlot_Names_log.pdf", width = 8, height = 4)
 par(mar=c(4, 4, 4, 4))
   DotPlot(object=M_T, assay="RNA", group.by="cluster_names_new", features = myGenes2, dot.scale=10, scale=F) + labs(y = NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 dev.off()
+
+p1<-DotPlot(object=M_T, assay="RNA", group.by="cluster_names_new", features = myGenes2, dot.scale=10, scale=F) + labs(y = NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+write.table(p1[["data"]], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Tcell_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
 
 # Shared clones heatmap
 paste2 <- function(...,sep=", ") {
@@ -167,6 +172,95 @@ pheatmap(t(clones_matrix_wide_redu),
          angle_col=45,
          filename = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/heatmap_all_shared_clones_long_updated.pdf")
 
+
+# TRA TRB frequncy barplot
+data_list=NULL
+top_ten_list=NULL
+for(expt in 1:length(expt_list)){
+  
+  # Set up path and read in Seurat object
+  name <- expt_list[expt]
+  path <- paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name)
+  M <- readRDS(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/QC/", name, "/", name, "_filtered_matrices/Seurat.rds"))
+  
+  # Pull in TCR data files
+  clonotypes <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name, "/clonotypes.csv"), sep=',', header=T)
+  filtered_contig <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name, "/filtered_contig_annotations.csv"), sep=',', header=T)
+  merged_TCR=left_join(filtered_contig, clonotypes, by=c("raw_clonotype_id" = "clonotype_id"))
+  
+  # Add full TCR and BCR data to Seurat object
+  M@misc[["TCR_full_table"]]<-merged_TCR
+  
+  # Add TCR data to each cell
+  AB_table=as.data.frame(matrix(nrow=length(unique(merged_TCR$barcode)),ncol=2))
+  colnames(AB_table)=c("TRA", "TRB")
+  row.names(AB_table)=unique(merged_TCR$barcode)
+  for(i in unique(merged_TCR$barcode)){
+    temp=merged_TCR[which(merged_TCR$barcode==i),] #subset table to just unique cell barcode i
+    temp=temp[,c(1,3,6,23,28)] #reduce to columns we care about, for ease of visualization when coding
+    TRA=temp[which(temp$chain=="TRA"),] #pull out column(s) that are TRA
+    TRB=temp[which(temp$chain=="TRB"),] #pull out column(s) that are TRB
+    AB_table[i,1]=paste(TRA$cdr3, collapse=",")
+    AB_table[i,2]=paste(TRB$cdr3, collapse=",")
+  }
+  AB_table=as.data.frame(cbind(barcodes=row.names(AB_table), AB_table))
+  data_to_add=as.data.frame(cbind(barcodes_full=M@assays[["RNA"]]@data@Dimnames[[2]], barcodes=M@assays[["RNA"]]@data@Dimnames[[2]]))
+  data_to_add[,2]=gsub("_.*", "", data_to_add[,2])
+  data_to_add=left_join(data_to_add, AB_table)
+  data_to_add[which(data_to_add[,3] == ""),3]<-NA #deal with blank spaces from the above paste
+  data_to_add[which(data_to_add[,4] == ""),4]<-NA
+  M@meta.data[["TRA"]]<-data_to_add$TRA
+  M@meta.data[["TRB"]]<-data_to_add$TRB
+  
+  # Save data to make histogram of TRA and TRB presence
+  hist_data=data_to_add[,3:4]
+  row.names(hist_data)=data_to_add$barcodes_full
+  hist_data[which(!is.na(hist_data$TRA)),1]<-1 #binarize
+  hist_data[which(!is.na(hist_data$TRB)),2]<-1
+  hist_data[which(is.na(hist_data$TRA)),1]<-0
+  hist_data[which(is.na(hist_data$TRB)),2]<-0
+  hist_data$TRA=as.numeric(hist_data$TRA)
+  hist_data$TRB=as.numeric(hist_data$TRB)
+  
+  TRA_TRB_Freq=as.data.frame(table(hist_data))$Freq
+  names(TRA_TRB_Freq)=c("None", "TRA Only", "TRB Only", "TRA and TRB")
+  M@misc[["TRA_TRB_Freq"]]<-TRA_TRB_Freq
+  data_list[[expt]]<-TRA_TRB_Freq
+  
+  top_ten=clonotypes[order(clonotypes$frequency, decreasing=T),"cdr3s_aa"][1:10]
+  top_ten_list[[expt]]<-top_ten
+  
+  # Color UMAP by clone size
+  clonesize_table=unique(merged_TCR[,c(1,32)])
+  clonesize_table=left_join(data_to_add, clonesize_table, by=c("barcodes" = "barcode"))
+  M@meta.data[["clonesize"]]<-clonesize_table$frequency
+  clones_table=unique(merged_TCR[,c(1,34)])
+  clones_table=left_join(data_to_add, clones_table, by=c("barcodes" = "barcode"))
+  M@meta.data[["clones"]]<-clones_table$cdr3s_aa
+  clones_top_ten<-M@meta.data[["clones"]]
+  clones_top_ten[which(!clones_top_ten %in% top_ten)]<-NA
+  M@meta.data[["clones_top_ten"]]<-clones_top_ten
+}
+
+names(data_list)=expt_list
+data_matrix=do.call("rbind", data_list)
+data_matrix=data_matrix[order(row.names(data_matrix)), ]
+
+# Without the "None" group
+pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_TCRonly.pdf", width = 10, height = 8.5)
+par(mar=c(10, 6, 4,4))
+barplot(height = t(data_matrix)[2:4,], 
+        beside = TRUE, 
+        col = hue_pal()(3), 
+        las=2,
+        ylab="Barcodes",
+        ylim=c(0,300))
+legend("topright", legend=colnames(data_matrix)[2:4], fill = hue_pal()(3))
+dev.off()
+
+write.table(t(data_matrix)[2:4,], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_TCRonly.txt", sep="\t", quote=F)
+
+
 #################
 # Violin Plots
 
@@ -226,6 +320,9 @@ my_colors=myColors$Cluster_Color
 data=as.data.frame(cbind(data, colors=my_colors))
 my_colors=data$colors
 data=data[,-3]
+
+write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byexpanded_new_colors.txt", sep="\t", quote=F)
+
 
 # Make plot
 pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byexpanded_new_colors.pdf", width = 9, height = 9)

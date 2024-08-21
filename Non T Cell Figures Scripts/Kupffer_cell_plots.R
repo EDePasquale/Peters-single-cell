@@ -61,6 +61,9 @@ data=as.data.frame(cbind(data, colors=my_colors))
 my_colors=data$colors
 data=data[,-5]
 
+write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_Kupffer_byACRType_new_colors.txt", sep="\t", quote=F)
+
+
 # Make plot
 pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_Kupffer_byACRType_new_colors.pdf", width = 9, height = 9)
 par(mar = c(8,4,4,16), xpd = T)
@@ -89,6 +92,10 @@ pdf(file = "Kupffer_Manual_RNA_DotPlot_Names_log.pdf", width = 7.75, height = 4)
 par(mar=c(4, 4, 4, 4))
 DotPlot(object=M_K, assay="RNA", features = myGenes2, dot.scale=10, scale=F) + labs(y =NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 dev.off()
+
+p1<-DotPlot(object=M_K, assay="RNA", features = myGenes2, dot.scale=10, scale=F) + labs(y =NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+write.table(p1[["data"]], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Kupffer_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
+
 
 DefaultAssay(M_K)<-"SCT"
 

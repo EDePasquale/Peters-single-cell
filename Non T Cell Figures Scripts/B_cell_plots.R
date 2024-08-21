@@ -93,6 +93,9 @@ axis(side = 1, at = seq(1,ncol(data))*1.2-0.5, labels = colnames(data), las = 2)
 legend(x = ncol(data)*1.2+0.5, y = 100, legend = row.names(data), fill = my_colors, bty = "n", border = NA)
 dev.off()
 
+write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_B_cell_byACRType_new_colors.txt", sep="\t", quote=F)
+
+
 # Make plots for BCR chain usage
 # IGL IGK IGH frequncy barplot
 data_list=NULL
@@ -220,6 +223,8 @@ barplot(height = t(data_matrix_IGLIGK),
 legend("topright", legend=colnames(data_matrix_IGLIGK), fill = hue_pal()(2))
 dev.off()
 
+write.table(t(data_matrix_IGLIGK), "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_KL.txt", sep="\t", quote=F)
+
 # Heavy chain usage (from Krish analysis)
 data=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
 data[,3]=paste(data[,1], data[,2], sep="-")
@@ -264,6 +269,9 @@ barplot(height = t(data_matrix)[2:5,],
 legend("topright", legend=colnames(data_matrix)[2:5], fill = hue_pal()(4))
 dev.off()
 
+write.table(t(data_matrix)[2:5,], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy_Redu.txt", sep="\t", quote=F)
+
+
 # Normalize data using log for visualization purposes
 M_B <- NormalizeData(M_B, assay="RNA")
 all.genes <- rownames(M_B)
@@ -283,6 +291,9 @@ pdf(file = "Bcell_Manual_RNA_DotPlot_Names_log.pdf", width = 8, height = 4)
 par(mar=c(4, 4, 4, 4))
 DotPlot(object=M_B, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y =NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text.y = element_text(angle = 90, vjust = 1, hjust=1))
 dev.off()
+
+p1<-DotPlot(object=M_B, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y =NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text.y = element_text(angle = 90, vjust = 1, hjust=1))
+write.table(p1[["data"]], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/B_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
 
 
 #myGenes2=c("CD19", "CD24", "CD38", "CD27", "PTPRC", "CD44", "A4GALT", "MME", "IL10", "IGHM", "IGHD", "IGHA1", "IGHG1", "MS4A1")
