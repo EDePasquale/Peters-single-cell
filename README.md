@@ -1,7 +1,7 @@
 # Peters lab publication scripts
 
 ## Paper Citation
-[to be determined]
+BioRxiv: https://www.biorxiv.org/content/10.1101/2024.02.26.582173v1.full.pdf
 
 ## Project Description
 In this project, the Peters lab performed 5' single-cell RNA-sequencing paired with TCR and BCR detection using the 10X Genomics Chromium Single Cell Immune Profiling kit on liver samples collected from pediatric patients with liver rejection following transplantation. For each patient there is at least 1 sample taken from a biopsy time point following transplantation, but there are frequently multiple time points gathered as well as sequecing of the healthy donor prior to transplantation. The goal of this project is to identify T-cell clones that may be driving rejection and to explore their gene expression differences across responses to treatment and interactions with other immune cells. Secondary goals include exploration of the BCR data and identification of novel cell states during rejection.
@@ -20,29 +20,41 @@ The following scripts were used in order to perform the following tasks:
 9. Add VDJ (Add_VDJ.R)
 
 ### T cell Figure Scripts and Non T Cell Figures Scripts
-We next investigated the T cells in the dataset and used the following scripts to generate the T-cell related figures:  
+We next investigated the T cells in the dataset and used the following scripts to generate the T cell related figures. We also did the same with non-T cells:  
 
 10. T and Non-T cell figure scripts  
-      a. (T_cell_plots.R, Shared_clones_bar.R, TRA_TRB_Stats.R, Shared_clones_bar.R)  
-      b. (B_cell_plots.R, NK_cell_plots.R, Kupffer_cell_plots.R)
+      a. T cell figure scripts (T_cell_plots.R, Shared_clones_bar.R, TRA_TRB_Stats.R)  
+      b. Non-T cell figure scripts (B_cell_plots.R, NK_cell_plots.R, Kupffer_cell_plots.R)
+
+### Splicing Scripts
+This set of scripts was used to explore the CD45RA/RO usage in the CD4+ clusters to separate Naive T from TCM:
+
+11. Splicing Scripts
+      a. Generate cluster-barcode associations for splitting by cell type (Generate_Clusters_Splicing.R)
+      b. Merge the BAM files from all samples (BAM_merge.sh)
+      c. Split the merged BAM file by cell type (BAMtoSubBAM.sh and extract-reads-pysam.py)
 
 ### Stats For Cell Type Proportions
 The next set of scripts were used to perform all of the differential cell type proportion statistics associated with each stacked bar plot for the various cell types:  
 
-11. Stats for cell type proportions  
+12. Stats for cell type proportions  
       a. Figure 1 (Stats_for_prop_all.R)  
-      b. T-cells (Stats_for_prop_Tcells.R)  
-      c. B-cells (Stats_for_prop_Bcells.R)  
+      b. T cells (Stats_for_prop_Tcells.R)  
+      c. B cells (Stats_for_prop_Bcells.R)  
       d. Kupffer cells (Stats_for_prop_Kcells.R)  
       e. NK cells (Stats_for_prop_NKcells.R)
 
-### CellPhoneDB
-Finally, we used CellPhoneDB to investigate the interactions between T cells and Kupffer cells:
+### MultiNicheNet
+This script was used to run MultiNicheNet to investigate the interactions between T cells and Kupffer/Macrophage cells:
 
-12. CellPhoneDB  
-      a. Prep for running CellPhoneDB, i.e., getting all of the files into the correct format and performing the differential expression (Prep_for_CellPhoneDB.R)  
-      b. Run CellPhoneDB for each Kupffer cell or Monocyte-Derived Macrophage population and all CD8+ T-cell populations. This was done for all CD8+ T-cells, only those expanded, and only those not expanded (e.g., Peters_DEG_cellphonedb_PTPRC_NotExp.sh)  
-      c. Post CellPhoneDB script to generate figures (Post_CellPhoneDB.R)  
-      d. Script to reduce the relevant interactions tables to only those interactions that are different between expanded and not expanded (Differential_CCC.R)
+13. NicheNet  
+      a. Run MultiNicheNet (MultiNicheNet_4simple.R)  
 
+### SoupOrCell
+This set of script runs SoupOrCell to identify donor-derived and recipient-derived cells in multiple biopsy samples:
+
+14. SoupOrCell  
+      a. Combine BAM files from multiple biopsies, including the matching donor sample (mergebams_Patient4.sh, mergebams_Patient5.sh, mergebams_Patient6.sh)
+      b. Run SoupOrCell and generate figures (SouporCell_12Jun2024_Patient4.sh, SouporCell_12Jun2024_Patient5.sh, SouporCell_12Jun2024_Patient6.sh)
+      
 #### Note: All additional figure panels were generated outside R (e.g., in Prism) and the code is not included in this repository.

@@ -8,14 +8,20 @@ Main Pipeline Scripts
 5. Subcluster
 6. Add cluster names
 7. Add meta data
-8. Prop Pplots
+8. Prop Plots
 9. Add VDJ
 
 T cell Figure Scripts and Non T Cell Figures Scripts
 10. T and Non-T cell figure scripts
 
-Stats For Cell Type Proportions
-11. Stats for cell type proportions
+Splicing Scripts
+11. Splicing Scripts
 
-CellPhoneDB
-12. CellPhoneDB
+Stats For Cell Type Proportions
+12. Stats for cell type proportions
+
+MultiNicheNet
+13. NicheNet
+
+SoupOrCell
+14. SoupOrCell
