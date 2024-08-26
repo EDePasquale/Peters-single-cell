@@ -31,9 +31,9 @@ We next investigated the T cells in the dataset and used the following scripts t
 This set of scripts was used to explore the CD45RA/RO usage in the CD4+ clusters to separate Naive T from TCM:
 
 11. Splicing Scripts
-      a. Generate cluster-barcode associations for splitting by cell type (Generate_Clusters_Splicing.R)
-      b. Merge the BAM files from all samples (BAM_merge.sh)
-      c. Split the merged BAM file by cell type (BAMtoSubBAM.sh and extract-reads-pysam.py)
+      a. Generate cluster-barcode associations for splitting by cell type (Generate_Clusters_Splicing.R) 
+      b. Merge the BAM files from all samples (BAM_merge.sh) 
+      c. Split the merged BAM file by cell type (BAMtoSubBAM.sh and extract-reads-pysam.py) 
 
 ### Stats For Cell Type Proportions
 The next set of scripts were used to perform all of the differential cell type proportion statistics associated with each stacked bar plot for the various cell types:  
