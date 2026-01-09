@@ -19,7 +19,7 @@ library(RColorBrewer)
 library(stringr)
 
 # Read in object
-setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/")
+setwd("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/")
 M <- readRDS("Seurat_Liver_30_subcluster_names_meta_TCR_BCR_Krish.rds")
 
 # Subset to T-cells only
@@ -33,7 +33,7 @@ M_T <- RunUMAP(M_T, reduction = "pca", dims = 1:30)
 M_T <- RunTSNE(M_T, reduction = "pca", dims = 1:30)
 
 # Pull in new colors
-myColors=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Color_Guide.txt", sep = "\t", header=T, comment.char="*")
+myColors=read.table("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Color_Guide.txt", sep = "\t", header=T, comment.char="*")
 myColors[4,2]<-"Naïve B"
 myColors[22,2]<-"CD4 Naïve T"
 myColors=myColors[which(myColors$Cluster_Name %in% Clusters_Keep),]
@@ -77,10 +77,10 @@ data=as.data.frame(cbind(data, colors=my_colors))
 my_colors=data$colors
 data=data[,-5]
 
-write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byACRType_new_colors.txt", sep="\t", quote=F)
+write.table(data, "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byACRType_new_colors.txt", sep="\t", quote=F)
 
 # Make plot
-pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byACRType_new_colors.pdf", width = 9, height = 9)
+pdf("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byACRType_new_colors.pdf", width = 9, height = 9)
 par(mar = c(8,4,4,16), xpd = T)
   barplot(as.matrix(data[nrow(data):1,]), col = rev(my_colors), xaxt = "n", ylab = "Population frequency (%)", border = NA)
   axis(side = 1, at = seq(1,ncol(data))*1.2-0.5, labels = colnames(data), las = 2)
@@ -103,7 +103,7 @@ par(mar=c(4, 4, 4, 4))
 dev.off()
 
 p1<-DotPlot(object=M_T, assay="RNA", group.by="cluster_names_new", features = myGenes2, dot.scale=10, scale=F) + labs(y = NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-write.table(p1[["data"]], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Tcell_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
+write.table(p1[["data"]], "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Tcell_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
 
 # Shared clones heatmap
 paste2 <- function(...,sep=", ") {
@@ -119,8 +119,8 @@ expt_list=unique(M@meta.data[["orig.ident"]])
 for(expt in expt_list){
   
   # Pull in TCR data files
-  clonotypes <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", expt, "/clonotypes.csv"), sep=',', header=T)
-  filtered_contig <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", expt, "/filtered_contig_annotations.csv"), sep=',', header=T)
+  clonotypes <- read.csv(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", expt, "/clonotypes.csv"), sep=',', header=T)
+  filtered_contig <- read.csv(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", expt, "/filtered_contig_annotations.csv"), sep=',', header=T)
   merged_TCR=left_join(filtered_contig, clonotypes, by=c("raw_clonotype_id" = "clonotype_id"))
   clones=clonotypes[order(clonotypes$frequency, decreasing=T),"cdr3s_aa"]
   X=str_count(clones, "TRA") # added to keep only those clones with 1 TRA and 1 TRB
@@ -161,7 +161,7 @@ pheatmap(clones_matrix_wide_redu,
          gaps_row=c(5,6,8,11,13,16,21,22,24,26,27,28,29),
          width=20,
          height = 11.5,
-         filename = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/heatmap_all_shared_clones_updated.pdf")
+         filename = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/heatmap_all_shared_clones_updated.pdf")
 
 pheatmap(t(clones_matrix_wide_redu),
          cluster_cols = F,
@@ -170,7 +170,7 @@ pheatmap(t(clones_matrix_wide_redu),
          width=11.5,
          height = 20,
          angle_col=45,
-         filename = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/heatmap_all_shared_clones_long_updated.pdf")
+         filename = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/heatmap_all_shared_clones_long_updated.pdf")
 
 
 # TRA TRB frequncy barplot
@@ -180,12 +180,12 @@ for(expt in 1:length(expt_list)){
   
   # Set up path and read in Seurat object
   name <- expt_list[expt]
-  path <- paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name)
-  M <- readRDS(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/QC/", name, "/", name, "_filtered_matrices/Seurat.rds"))
+  path <- paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name)
+  M <- readRDS(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/QC/", name, "/", name, "_filtered_matrices/Seurat.rds"))
   
   # Pull in TCR data files
-  clonotypes <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name, "/clonotypes.csv"), sep=',', header=T)
-  filtered_contig <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name, "/filtered_contig_annotations.csv"), sep=',', header=T)
+  clonotypes <- read.csv(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name, "/clonotypes.csv"), sep=',', header=T)
+  filtered_contig <- read.csv(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/TCRs/", name, "/filtered_contig_annotations.csv"), sep=',', header=T)
   merged_TCR=left_join(filtered_contig, clonotypes, by=c("raw_clonotype_id" = "clonotype_id"))
   
   # Add full TCR and BCR data to Seurat object
@@ -247,7 +247,7 @@ data_matrix=do.call("rbind", data_list)
 data_matrix=data_matrix[order(row.names(data_matrix)), ]
 
 # Without the "None" group
-pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_TCRonly.pdf", width = 10, height = 8.5)
+pdf(file = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_TCRonly.pdf", width = 10, height = 8.5)
 par(mar=c(10, 6, 4,4))
 barplot(height = t(data_matrix)[2:4,], 
         beside = TRUE, 
@@ -258,7 +258,7 @@ barplot(height = t(data_matrix)[2:4,],
 legend("topright", legend=colnames(data_matrix)[2:4], fill = hue_pal()(3))
 dev.off()
 
-write.table(t(data_matrix)[2:4,], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_TCRonly.txt", sep="\t", quote=F)
+write.table(t(data_matrix)[2:4,], "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_TCRonly.txt", sep="\t", quote=F)
 
 
 #################
@@ -321,11 +321,11 @@ data=as.data.frame(cbind(data, colors=my_colors))
 my_colors=data$colors
 data=data[,-3]
 
-write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byexpanded_new_colors.txt", sep="\t", quote=F)
+write.table(data, "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byexpanded_new_colors.txt", sep="\t", quote=F)
 
 
 # Make plot
-pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byexpanded_new_colors.pdf", width = 9, height = 9)
+pdf("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_T_cell_byexpanded_new_colors.pdf", width = 9, height = 9)
 par(mar = c(8,4,4,16), xpd = T)
 barplot(as.matrix(data[nrow(data):1,]), col = rev(my_colors), xaxt = "n", ylab = "Population frequency (%)", border = NA)
 axis(side = 1, at = seq(1,ncol(data))*1.2-0.5, labels = colnames(data), las = 2)
@@ -353,6 +353,14 @@ par(mar=c(2, 2, 2, 2))
   VlnPlot(M_T, assay="RNA", group.by="Classification", split.by="expanded", stack=T, features=myGenes_new, flip=T, sort=F)
 dev.off()
 
+Idents(M_T)<-"cluster_names_new"
+M_T_CD8<-subset(M_T, idents=c("MAIT","CD8 Effector Memory T","CD8 Effector T","CD8 NK-like T", "Gamma Delta T", "Cycling T"))
+Idents(M_T_CD8)<-"Classification"
+
+pdf(file = "Tcell_sidebyside_new_RNA_Violin_newClassifications_justSerial_CD8.pdf", width = 8, height = 9)
+par(mar=c(2, 2, 2, 2))
+  VlnPlot(M_T_CD8, assay="RNA", group.by="Classification", split.by="expanded", stack=T, features=myGenes_new, flip=T, sort=F)
+dev.off()
 
 # for anna
 Idents(object = M_T) <- "expanded"

@@ -16,7 +16,7 @@ library(scales)
 library(cowplot)
 
 # Read in object
-setwd("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/")
+setwd("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/")
 M <- readRDS("Seurat_Liver_30_subcluster_names_meta_TCR_BCR_Krish.rds")
 
 # Subset to B-cells only
@@ -30,7 +30,7 @@ M_B <- RunUMAP(M_B, reduction = "pca", dims = 1:30)
 M_B <- RunTSNE(M_B, reduction = "pca", dims = 1:30)
 
 # Pull in new colors
-myColors=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Color_Guide.txt", sep = "\t", header=T, comment.char="*")
+myColors=read.table("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/Color_Guide.txt", sep = "\t", header=T, comment.char="*")
 myColors[4,2]<-"Naïve B"
 myColors=myColors[which(myColors$Cluster_Name %in% Clusters_Keep),]
 row.names(myColors)=myColors$Cluster_Name
@@ -50,13 +50,25 @@ dev.off()
 # Plot by Clone size
 pdf(file = "TSNE_Bcell_Clonesize.pdf", width = 8, height = 8)
 par(mar=c(2, 2, 2, 2))
-FeaturePlot(M_B, reduction="tsne", features="clonesize_B_Krish", raster=F, pt.size=1, cols = c("lightgrey", "red"))
+FeaturePlot(M_B, reduction="tsne", features="clonesize_B_Krish", raster=F, pt.size=1, cols = c("lightgrey", "red"), order=T)
 dev.off()
 
 # B cell mutation
 pdf(file = "TSNE_Bcell_Mutation.pdf", width = 8, height = 8)
 par(mar=c(2, 2, 2, 2))
-FeaturePlot(M_B, reduction="tsne", features ="mutation_level", raster=F, pt.size=1, cols=c("lightgrey", "blue"))
+FeaturePlot(M_B, reduction="tsne", features ="mutation_level", raster=F, pt.size=1, cols=c("lightgrey", "blue"), order=T)
+dev.off()
+
+# Plot by Clone size
+pdf(file = "TSNE_Bcell_Clonesize_Bigger.pdf", width = 8, height = 8)
+par(mar=c(2, 2, 2, 2))
+FeaturePlot(M_B, reduction="tsne", features="clonesize_B_Krish", raster=F, pt.size=2, cols = c("lightgrey", "red"), order=T)
+dev.off()
+
+# B cell mutation
+pdf(file = "TSNE_Bcell_Mutation_Bigger.pdf", width = 8, height = 8)
+par(mar=c(2, 2, 2, 2))
+FeaturePlot(M_B, reduction="tsne", features ="mutation_level", raster=F, pt.size=2, cols=c("lightgrey", "blue"), order=T)
 dev.off()
 
 # All Clusters clone size
@@ -86,14 +98,14 @@ my_colors=data$colors
 data=data[,-5]
 
 # Make plot
-pdf("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_B_cell_byACRType_new_colors.pdf", width = 9, height = 9)
+pdf("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_B_cell_byACRType_new_colors.pdf", width = 9, height = 9)
 par(mar = c(8,4,4,16), xpd = T)
 barplot(as.matrix(data[nrow(data):1,]), col = rev(my_colors), xaxt = "n", ylab = "Population frequency (%)", border = NA)
 axis(side = 1, at = seq(1,ncol(data))*1.2-0.5, labels = colnames(data), las = 2)
 legend(x = ncol(data)*1.2+0.5, y = 100, legend = row.names(data), fill = my_colors, bty = "n", border = NA)
 dev.off()
 
-write.table(data, "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_B_cell_byACRType_new_colors.txt", sep="\t", quote=F)
+write.table(data, "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/CellTypeFrequencies_B_cell_byACRType_new_colors.txt", sep="\t", quote=F)
 
 
 # Make plots for BCR chain usage
@@ -105,12 +117,12 @@ for(expt in 1:length(expt_list)){
   
   # Set up path and read in Seurat object
   name <- expt_list[expt]
-  path <- paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name)
+  path <- paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name)
   M_temp <- subset(x = M, subset = orig.ident == name)
   
   # Pull in BCR data files
-  clonotypes <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name, "/clonotypes.csv"), sep=',', header=T)
-  filtered_contig <- read.csv(paste0("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name, "/filtered_contig_annotations.csv"), sep=',', header=T)
+  clonotypes <- read.csv(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name, "/clonotypes.csv"), sep=',', header=T)
+  filtered_contig <- read.csv(paste0("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/", name, "/filtered_contig_annotations.csv"), sep=',', header=T)
   merged_BCR=left_join(filtered_contig, clonotypes, by=c("raw_clonotype_id" = "clonotype_id"))
   
   # Add full BCR data to Seurat object
@@ -199,7 +211,7 @@ data_matrix=do.call(rbind, lapply(data_list, function(x) x[match(names(data_list
 data_matrix[which(is.na(data_matrix))]<-0
 
 # Without the "None" group
-pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly.pdf", width = 10, height = 8.5)
+pdf(file = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly.pdf", width = 10, height = 8.5)
 par(mar=c(10, 6, 4,4))
 barplot(height = t(data_matrix)[2:8,], 
         beside = TRUE, 
@@ -212,7 +224,7 @@ dev.off()
 
 #K/L usage only (from cell ranger analysis)
 data_matrix_IGLIGK=cbind(IGK=rowSums(data_matrix[,grep("IGK", colnames(data_matrix))]), IGL=rowSums(data_matrix[,grep("IGL", colnames(data_matrix))]))
-pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_KL.pdf", width = 10, height = 8.5)
+pdf(file = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_KL.pdf", width = 10, height = 8.5)
 par(mar=c(10, 6, 4,4))
 barplot(height = t(data_matrix_IGLIGK), 
         beside = TRUE, 
@@ -223,10 +235,10 @@ barplot(height = t(data_matrix_IGLIGK),
 legend("topright", legend=colnames(data_matrix_IGLIGK), fill = hue_pal()(2))
 dev.off()
 
-write.table(t(data_matrix_IGLIGK), "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_KL.txt", sep="\t", quote=F)
+write.table(t(data_matrix_IGLIGK), "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_KL.txt", sep="\t", quote=F)
 
 # Heavy chain usage (from Krish analysis)
-data=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
+data=read.table("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
 data[,3]=paste(data[,1], data[,2], sep="-")
 data[,3]=gsub("-$", "", data[,3])
 data=data[,c(3,5)]
@@ -235,7 +247,7 @@ data_matrix=data.frame(unclass(table(data)))
 colnames(data_matrix)[1]<-"Unknown"
 
 # Without the "Unknown" group
-pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy.pdf", width = 10, height = 8.5)
+pdf(file = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy.pdf", width = 10, height = 8.5)
 par(mar=c(10, 6, 4,4))
 barplot(height = t(data_matrix)[2:15,], 
         beside = TRUE, 
@@ -247,7 +259,7 @@ legend("topright", legend=colnames(data_matrix)[2:15], fill = hue_pal()(14))
 dev.off()
 
 # Heavy chain usage (from Krish analysis) — reduced to IGC, IGD, IGG, and IGM level only
-data=read.table("/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
+data=read.table("/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/BCRs/all_bcr_mut_updated_namecorrection.csv", sep=",", header=T)
 data[,3]=paste(data[,1], data[,2], sep="-")
 data[,3]=gsub("-$", "", data[,3])
 data=data[,c(3,5)]
@@ -258,7 +270,7 @@ data_matrix=data.frame(unclass(table(data)))
 colnames(data_matrix)[1]<-"Unknown"
 
 # Without the "Unknown" group
-pdf(file = "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy_Redu.pdf", width = 10, height = 8.5)
+pdf(file = "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy_Redu.pdf", width = 10, height = 8.5)
 par(mar=c(10, 6, 4,4))
 barplot(height = t(data_matrix)[2:5,], 
         beside = TRUE, 
@@ -269,7 +281,7 @@ barplot(height = t(data_matrix)[2:5,],
 legend("topright", legend=colnames(data_matrix)[2:5], fill = hue_pal()(4))
 dev.off()
 
-write.table(t(data_matrix)[2:5,], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy_Redu.txt", sep="\t", quote=F)
+write.table(t(data_matrix)[2:5,], "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/barplot_BCRonly_Heavy_Redu.txt", sep="\t", quote=F)
 
 
 # Normalize data using log for visualization purposes
@@ -293,7 +305,7 @@ DotPlot(object=M_B, assay="RNA", features = myGenes, dot.scale=10, scale=F) + la
 dev.off()
 
 p1<-DotPlot(object=M_B, assay="RNA", features = myGenes, dot.scale=10, scale=F) + labs(y =NULL, x=NULL) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text.y = element_text(angle = 90, vjust = 1, hjust=1))
-write.table(p1[["data"]], "/Volumes/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/B_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
+write.table(p1[["data"]], "/data/GI-Informatics/DePasquale/Projects/Peters_5PrimeTCRBCR/Seurat_Integration_0.5_SCT_08.30.23/B_Manual_RNA_DotPlot_Names_log.txt", sep="\t", quote=F)
 
 
 #myGenes2=c("CD19", "CD24", "CD38", "CD27", "PTPRC", "CD44", "A4GALT", "MME", "IL10", "IGHM", "IGHD", "IGHA1", "IGHG1", "MS4A1")
